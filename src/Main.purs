@@ -11,28 +11,6 @@ import Node.Process (stdin)
 import Node.ReadLine (READLINE, close, createConsoleInterface, createInterface, noCompletion, prompt, setLineHandler, setPrompt)
 import Purpl (createContext, evalSync, jsonparse)
 
-type Effects = () ∷ # Effect
-
-type Purpl a = Eff Effects a
-
-setup :: Purpl Unit
-setup = pure unit
-
-eval :: String -> Purpl Unit
-eval js = pure unit
-
-reset :: Purpl Unit
-reset = pure unit
-
-shutdown :: Purpl Unit
-shutdown = pure unit
-
-lol = "lol"
-
--- main = do
---   r ← evalSync "1 + 1" Nothing
---   log r.result
-
 main :: forall eff. Eff (readline :: READLINE, console :: CONSOLE, exception :: EXCEPTION | eff) Unit
 main = do
   ctx ← createContext {}
