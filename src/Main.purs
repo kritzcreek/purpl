@@ -8,18 +8,16 @@ import Control.Monad.Eff.Exception (EXCEPTION)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (mempty)
 import Node.Process (stdin)
-import Node.ReadLine (READLINE, close, createConsoleInterface, createInterface, noCompletion, prompt, setLineHandler, setPrompt)
-import Purpl (createContext, evalSync, jsonparse)
+import Node.ReadLine (READLINE, close, createInterface, prompt, setLineHandler)
+import Purpl (evalSync, jsonparse)
 
 main :: forall eff. Eff (readline :: READLINE, console :: CONSOLE, exception :: EXCEPTION | eff) Unit
 main = do
-  ctx ← createContext {}
   interface <- createInterface stdin mempty
   prompt interface
   setLineHandler interface $ \s ->
     if s == "quit"
        then close interface
        else do
-        { result } ← evalSync (jsonparse s) (Just ctx)
+        { result } ← evalSync (jsonparse s) Nothing
         log result
-        prompt interface

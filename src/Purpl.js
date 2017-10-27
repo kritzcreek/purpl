@@ -1,32 +1,27 @@
 var vm = require('vm');
-var util = require('util');
 
-function purplEval(code, ctx) {
-    var context = ctx || vm.createContext({});
-    var script = new vm.Script("(function(require){ return (" + code + ") })");
-    var result = script.runInContext(context)(require);
-    return { context: context, result: result };
+function mkScriptImpl(code) {
+    return new vm.Script(code);
 }
 
-function purplEvalAsync(code, cb, ctx) {
-    var context = ctx || vm.createContext({});
-    var newCb = function (result) {
-        cb({ context: context, result: result });
-    };
-    var script = new vm.Script("(function(require){ return " + code + " })");
-    script.runInContext(context)(require)(newCb);
+function runInContextImpl(ctx, script) {
+    return script.runInContext(ctx);
 }
-
-exports.jsonparse = function(s) { return JSON.parse(s); };
-exports.purplEval = purplEval;
-exports.purplEvalAsync = purplEvalAsync;
-exports.createContext = function(r) {
-    return function() {
-        vm.createContext(r);
-    };
+function createContextImpl(r) {
+    return vm.createContext(r);
 };
 
-// const {result, context} = purplEval(expr)
-// var expr = 'dude = require("./extern.js").exp';
-// console.log(util.inspect(purplEval('dude', context).result))
-// purplEvalAsync('(function(k) { rofl = x; k(dude) })', r => console.log(util.inspect(r)), context)
+exports.jsonparse = function(s) { return JSON.parse(s); };
+exports.mkScriptImpl = mkScriptImpl;
+exports.runInContextImpl = runInContextImpl;
+exports.require = require;
+exports.createContextImpl = createContextImpl;
+
+// function purplEvalAsync(code, cb, ctx) {
+//     var context = ctx || vm.createContext({});
+//     var newCb = function (result) {
+//         cb({ context: context, result: result });
+//     };
+//     var script = new vm.Script("(function(require){ return " + code + " })");
+//     script.runInContext(context)(require)(newCb);
+// }

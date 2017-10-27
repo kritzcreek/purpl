@@ -2,5 +2,13 @@
   "name": "purpl",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "GPL3"
+  "license": "GPL3",
+  "dependencies": {
+    "pulp": "^12.0.1",
+    "purescript": "^0.11.6"
+  },
+  "scripts": {
+    "build": "pulp build",
+    "run": "pulp run"
+  }
 }
