@@ -1,10 +1,11 @@
-module Purpl (evalSync, jsonparse, Context) where
+module Purpl (eval, jsonparse, Context) where
 
 import Prelude
 
 import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Exception (Error)
 import Control.Monad.Eff.Exception as Ex
-import Control.Monad.Eff.Uncurried (EffFn1, EffFn2, runEffFn1, runEffFn2)
+import Control.Monad.Eff.Uncurried (EffFn1, EffFn2, mkEffFn1, runEffFn1, runEffFn2)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe, maybe)
 
@@ -27,11 +28,16 @@ runInContext = runEffFn2 runInContextImpl
 shimRequire ∷ String → String
 shimRequire s = "(function(require){ return (" <> s <> ") })"
 
-evalSync ∷ ∀ eff. String → Maybe Context → Eff eff { context ∷ Context, result ∷ String }
-evalSync code mCtx = do
+-- | The type of the JavaScript we expect to be sent for evaluation
+type JSEval eff = EffFn2 eff (EffFn1 eff Error Unit) (EffFn1 eff String Unit) Unit
+
+eval ∷ ∀ eff. Maybe Context → String → (Either Error String → Eff eff Unit) → Eff eff Unit
+eval mCtx code cb = do
   ctx ← maybe (runEffFn1 createContextImpl {}) pure mCtx
-  script ∷ Script (Require → String) ← mkScript (shimRequire code)
+  script ∷ Script (Require → JSEval eff) ← mkScript (shimRequire code)
   result ← Ex.try $ (_ $ require) <$> runInContext ctx script
   case result of
-    Right r → pure { context: ctx, result: r }
-    Left err → pure { context: ctx, result: Ex.message err }
+    Left err →
+      cb (Left err)
+    Right r → do
+      runEffFn2 r (mkEffFn1 (cb <<< Left)) (mkEffFn1 (cb <<< Right))

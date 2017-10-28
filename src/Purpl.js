@@ -16,12 +16,3 @@ exports.mkScriptImpl = mkScriptImpl;
 exports.runInContextImpl = runInContextImpl;
 exports.require = require;
 exports.createContextImpl = createContextImpl;
-
-// function purplEvalAsync(code, cb, ctx) {
-//     var context = ctx || vm.createContext({});
-//     var newCb = function (result) {
-//         cb({ context: context, result: result });
-//     };
-//     var script = new vm.Script("(function(require){ return " + code + " })");
-//     script.runInContext(context)(require)(newCb);
-// }
